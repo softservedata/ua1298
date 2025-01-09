@@ -16,11 +16,11 @@ public class AppTest {
 
     @BeforeAll
     public static void setup() {
-        //WebDriverManager.chromedriver().setup();
-        //driver = new ChromeDriver();
+        WebDriverManager.chromedriver().setup();
+        driver = new ChromeDriver();
         //
-        WebDriverManager.firefoxdriver().setup();
-        driver = new FirefoxDriver();
+        //WebDriverManager.firefoxdriver().setup();
+        //driver = new FirefoxDriver();
         //
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10)); // 0 by default
         driver.manage().window().maximize();
