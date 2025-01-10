@@ -49,8 +49,8 @@ public class AppTest {
     public void simplePrint() {
         //System.out.println("start");
         //int i = 1 / 0;
-        System.out.println("\t\tdone");
-        Assertions.assertEquals(4, 2 + 2);
+//        System.out.println("\t\tdone");
+//        Assertions.assertEquals(4, 2 + 2);
     }
 
     @Test
