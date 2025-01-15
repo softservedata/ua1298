@@ -2,8 +2,8 @@ package com.softserve.homwork09.hometask1;
 
 public class Rectangle {
 
-    private double width;
-    private double height;
+    protected double width;
+    protected double height;
     private double angle;
 
     public Rectangle(){
@@ -58,15 +58,18 @@ public class Rectangle {
         return (width > 0) && (height > 0) && (angle == 90.0);
     }
 
-    public double getArea(){
+    public double calculateArea(){
+        isItRectangle();
         return width * height;
     }
 
-    public double getPerimeter(){
+    public double calculatePerimeter(){
+        isItRectangle();
         return 2 * (width + height);
     }
 
     public double getDiagonal() {
+        isItRectangle();
         return Math.sqrt(width * width + height * height);
     }
 

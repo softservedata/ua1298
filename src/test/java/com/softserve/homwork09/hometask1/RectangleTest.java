@@ -5,15 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RectangleTest {
 
     private  final Rectangle rectangle = new Rectangle();
+    private final double delta = 0.0001; //add acceptable calculation error margin
 
     @Test
-    @DisplayName("Default Constructor create Rectangle with heigh = 1 and width = 2, angle = 90 ")
+    @DisplayName("Default Constructor create Rectangle with height = 1 and width = 2, angle = 90 ")
     public void testDefaultConstructor() {
         assertEquals(2.0, rectangle.getWidth());
         assertEquals(1.0, rectangle.getHeight());
@@ -29,51 +29,64 @@ public class RectangleTest {
     }
 
     @Test
-    @DisplayName("getArea() should return correct area for valid width and height")
-    public void testGetArea() {
+    @DisplayName("calculatedArea() should return correct area for valid width and height")
+    public void testCalculateArea() {
         Rectangle rectangle = new Rectangle(4.0, 3.0);
-        //add an error for comparison
-        double delta = 0.00001;
-        assertEquals(12.0, rectangle.getArea(), delta, "Numbers are not equal within the delta");
+        assertEquals(12.0, rectangle.calculateArea(), delta, "Numbers are not equal within the delta");
     }
 
     @ParameterizedTest
-    @DisplayName("getArea() should return correct area for different width and height values")
+    @DisplayName("calculatedArea() should return correct area for different width and height values")
     @CsvSource({
             "2.0, 10.0, 20.0",
             "1.0, 1.0, 1.0",
             "1.5, 4.7, 7.05",
             "0.2, 0.4, 0.08"
     })
-    public void testGetAreaParameterized(double width, double height, double expectedArea) {
+    public void testCalculateAreaParameterized(double width, double height, double expectedArea) {
         Rectangle rectangle = new Rectangle(width, height);
-        //add an error for comparison
-        double delta = 0.00001;
-        assertEquals(expectedArea, rectangle.getArea(), delta, "Numbers are not equal within the delta");
+        assertEquals(expectedArea, rectangle.calculateArea(), delta, "Numbers are not equal within the delta");
     }
 
     @Test
-    @DisplayName("getPerimeter() should return correct perimeter for valid width and height")
-    public void testGetPerimeter() {
+    @DisplayName("calculatedPerimeter() should return correct perimeter for valid width and height")
+    public void testCalculatePerimeter() {
         Rectangle rectangle = new Rectangle(7.0, 6.0);
-        assertEquals(26.0, rectangle.getPerimeter());
+        assertEquals(26.0, rectangle.calculatePerimeter());
     }
 
     @ParameterizedTest
-    @DisplayName("getPerimeter() should return correct area for different width and height values")
+    @DisplayName("calculatedPerimeter() should return correct area for different width and height values")
     @CsvSource({
             "2.0, 10.0, 24.0",
             "1.0, 1.0, 4.0",
             "1.5, 4.7, 12.4",
             "1.2, 1.4, 5.2"
     })
-    public void testGetPerimeterParameterized(double width, double height, double expectedArea) {
+    public void testCalculatePerimeterParameterized(double width, double height, double expectedArea) {
         Rectangle rectangle = new Rectangle(width, height);
-        //add an error for comparison
-        double delta = 0.00001;
-        assertEquals(expectedArea, rectangle.getPerimeter(), delta, "Numbers are not equal within the delta");
+        assertEquals(expectedArea, rectangle.calculatePerimeter(), delta, "Numbers are not equal within the delta");
     }
 
+    @Test
+    @DisplayName("getDiagonal() should return correct diagonal for valid width and height")
+    public void testgetDiagonal() {
+        Rectangle rectangle = new Rectangle(7.0, 6.0);
+        assertEquals(9.219544, rectangle.getDiagonal(), delta, "Numbers are not equal within the delta");
+    }
+
+    @ParameterizedTest
+    @DisplayName("getDiagonal() should return correct diagonal for different width and height values")
+    @CsvSource({
+            "3.0, 4.0, 5.0",
+            "1.0, 1.0, 1.414213",
+            "1.5, 4.7, 4.93355",
+            "1.2, 1.4, 1.8439"
+    })
+    public void testGetDiagonalParameterized(double width, double height, double expectedDiagonal) {
+        Rectangle rectangle = new Rectangle(width, height);
+        assertEquals(expectedDiagonal, rectangle.getDiagonal(), delta, "Numbers are not equal within the delta");
+    }
 
 
     @Test
@@ -81,6 +94,107 @@ public class RectangleTest {
     public void testSetHeightWithNegativeValue() {
         assertThrows(IllegalArgumentException.class, () -> rectangle.setHeight(-5),
                 "Expected setHeight() to throw, but it didn't");
+    }
+
+    @Test
+    @DisplayName("setWidth() should throw IllegalArgumentException when width is negative")
+    public void testSetWidthWithNegativeValue() {
+        assertThrows(IllegalArgumentException.class, () -> rectangle.setWidth(-3),
+                "Expected setWidth() to throw, but it didn't");
+    }
+
+    @Test
+    @DisplayName("isItRectangle() should throw exception when one side is zero")
+    public void testIsItRectangleOneZeroSide(){
+        Rectangle rectangle = new Rectangle();
+        assertThrows(IllegalArgumentException.class, () -> rectangle.setHeight(0.0),
+                "Expected isItRectangle() to throw, but it didn't");
+    }
+
+
+    @Test
+    @DisplayName("Constructor should throw IllegalArgumentException when height is negative")
+    public void testConstructorWithNegativeHeight() {
+        assertThrows(IllegalArgumentException.class, () -> new Rectangle(4.0, -3.0),
+                "Expected constructor to throw, but it didn't");
+    }
+
+
+    @Test
+    @DisplayName("isItRectangle() should throw IllegalArgumentException when height and width are zero values")
+    public void testIsItRectangle(){
+        TestRectangle testRectangle = new TestRectangle(0.0,12.0);
+        assertThrows(IllegalArgumentException.class, () -> testRectangle.isItRectangle(),
+                "Width and height must be positive, not zero");
+    }
+
+    @Test
+    @DisplayName("calculatedArea() should throw IllegalArgumentException when height and width are zero values")
+    public void testCalculatedAreaNegativeAllSides() {
+        TestRectangle testRectangle = new TestRectangle(0.0,0.0);
+        assertThrows(IllegalArgumentException.class, () -> testRectangle.calculateArea(),
+                "Width and height must be positive, not zero");
+
+    }
+
+    @ParameterizedTest
+    @DisplayName("calculatedArea() should throw IllegalArgumentException when height or width is zero")
+    @CsvSource({
+            "0, 2.0",
+            "2.0, 0",
+            "0, -2.0",
+            "-2.0, 0"
+    })
+    public void testCalculatedAreaZeroParametrized(double width, double height) {
+        TestRectangle testRectangle = new TestRectangle(width, height);
+        assertThrows(IllegalArgumentException.class, () -> testRectangle.calculateArea(),
+                "Width and height must be positive");
+
+    }
+
+    @ParameterizedTest
+    @DisplayName("calculatedArea() should throw IllegalArgumentException when height or width is negative")
+    @CsvSource({
+            "-3.0, 2.0",
+            "2.0, -3.0",
+            "-2.0, -3.0"
+    })
+    public void testCalculatedAreaNegativeParametrized(double width, double height) {
+        TestRectangle testRectangle = new TestRectangle(width, height);
+        assertThrows(IllegalArgumentException.class, () -> testRectangle.calculateArea(),
+                "Width and height must be positive");
+
+    }
+
+    @ParameterizedTest
+    @DisplayName("calculatedPerimeter() should throw IllegalArgumentException when height or width is negative or equals zero")
+    @CsvSource({
+            "-3.0, 2.0",
+            "2.0, -3.0",
+            "-2.0, -3.0",
+            "2.0, 0",
+            "0, 3.0",
+            "0, 0"
+    })
+    public void testCalculatedPerimeterNegativeOrZeroValuesParametrized(double width, double height) {
+        TestRectangle testRectangle = new TestRectangle(width, height);
+        assertThrows(IllegalArgumentException.class, () -> testRectangle.calculateArea(),
+                "Width and height must be positive");
+
+    }
+
+    @ParameterizedTest
+    @DisplayName("getDiagonal() throw IllegalArgumentException when height or width is negative or equal zero")
+    @CsvSource({
+            "-3.0, -4.0",
+            "-1.0, 1.0",
+            "0, 1.0",
+            "0, -1.0"
+    })
+    public void testGetDiagonalhNegativeOrZeroValuesParameterized(double width, double height) {
+        TestRectangle testRectangle = new TestRectangle(width, height);
+        assertThrows(IllegalArgumentException.class, () -> testRectangle.getDiagonal(),
+                "Width and height must be positive");
     }
 
 }
