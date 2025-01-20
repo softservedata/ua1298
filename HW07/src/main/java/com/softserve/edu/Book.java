@@ -1,9 +1,5 @@
 package com.softserve.edu;
 
-enum BookGenre{
-    FANTASY, ROMANCE, THRILLER, HORROR
-}
-
 public class Book {
     private String title;
     private String author;
@@ -77,3 +73,4 @@ public class Book {
                 "}\n";
     }
 }
+
