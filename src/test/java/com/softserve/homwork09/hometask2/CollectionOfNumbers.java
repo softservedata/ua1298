@@ -4,7 +4,8 @@ import java.util.*;
 
 public class CollectionOfNumbers {
 
-    private List<Integer> numbers;
+    //change attribute to package private for extended class access
+    List<Integer> numbers;
 
 
     public CollectionOfNumbers(){
