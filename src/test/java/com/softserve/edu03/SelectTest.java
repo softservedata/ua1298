@@ -99,6 +99,14 @@ public class SelectTest {
         select.selectByVisibleText("Option 3");
         presentationSleep(); // For Presentation ONLY
         //
+        WebElement radioThat = driver.findElement(By.id("radioThatInput"));
+        System.out.println("1. radioThat.isSelected() = " + radioThat.isSelected());
+        presentationSleep(); // For Presentation ONLY
+        radioThat.click();
+        System.out.println("2. radioThat.isSelected() = " + radioThat.isSelected());
+        presentationSleep(); // For Presentation ONLY
+        System.out.println("font-weight = " + radioThat.getCssValue("font-weight"));
+        //
         presentationSleep(2); // For Presentation ONLY
     }
 }
