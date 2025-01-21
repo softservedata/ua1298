@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.InputMismatchException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -69,9 +70,9 @@ class BookManagerTest {
     @Test
     void printListOfAuthorsWithAllBookOneAuthor() {
         //arrange
-        BookManager bookManager = new BookManager(new Book[]{books[15], books[16], books[17]});
         int firstIndex = 15;
         int lastIndex = 17;
+        BookManager bookManager = new BookManager(new Book[]{books[firstIndex], books[(firstIndex+lastIndex)/2], books[lastIndex]});
         //act
         var result = bookManager.printListOfAuthors().split("[\\[,]");
         //assert
@@ -92,6 +93,69 @@ class BookManagerTest {
         assertEquals(2, result.length);
         assertTrue(Arrays.stream(result).anyMatch(s -> s.contains(books[oneRecordIndex].getAuthor())));
         assertTrue(Arrays.stream(result).anyMatch(s -> s.contains("Authors")));
+    }
+
+    @Test
+    void checkPrintAuthorsThrowsTheExceptionWhileEmptyManager(){
+        //arrange
+        BookManager bookManager = new BookManager(new Book[]{});
+        //act
+        //assert
+        assertThrows(InputMismatchException.class, bookManager::printListOfAuthors, "There is no books in your manager");
+    }
+
+    @Test
+    void checkPrintListOfAuthorsByGenreWithExistingGenreInManager() {
+        //arrange
+        BookManager bookManager = new BookManager(books);
+        //act
+        var result = bookManager.printListOfAuthorsByGenre(BookGenre.FANTASY).split("[\\[,]");
+        //assert
+        assertEquals(3, result.length);
+        assertTrue(Arrays.stream(result).anyMatch(s -> s.contains("J.R.R. Tolkien")));
+        assertTrue(Arrays.stream(result).anyMatch(s -> s.contains("Patrick Rothfuss")));
+        assertTrue(Arrays.stream(result).anyMatch(s -> s.contains("Authors")));
+    }
+
+    @Test
+    void checkPrintListOfAuthorsByGenreWithNotExistingGenreInManager() {
+        //arrange
+        BookManager bookManager = new BookManager(new Book[]{books[5], books[8], books[11], books[15], books[18]});
+        //act
+        var result = bookManager.printListOfAuthorsByGenre(BookGenre.FANTASY);
+        //assert
+        assertEquals("No matches!", result);
+    }
+
+    @Test
+    void checkPrintListOfAuthorsByGenreWithNotExistingGenreInManagerWithOneBook() {
+        //arrange
+        BookManager bookManager = new BookManager(new Book[]{books[5]});
+        //act
+        var result = bookManager.printListOfAuthorsByGenre(BookGenre.FANTASY);
+        //assert
+        assertEquals("No matches!", result);
+    }
+
+    @Test
+    void checkPrintListOfAuthorsByGenreWithExistingGenreInManagerWithOneBook() {
+        //arrange
+        BookManager bookManager = new BookManager(new Book[]{books[3]});
+        //act
+        var result = bookManager.printListOfAuthorsByGenre(BookGenre.FANTASY).split("[\\[,]");
+        //assert
+        assertEquals(2, result.length);
+        assertTrue(Arrays.stream(result).anyMatch(s -> s.contains("Patrick Rothfuss")));
+        assertTrue(Arrays.stream(result).anyMatch(s -> s.contains("Authors")));
+    }
+
+    @Test
+    void checkPrintAuthorsByGenreThrowsTheExceptionWhileEmptyManager(){
+        //arrange
+        BookManager bookManager = new BookManager(new Book[]{});
+        //act
+        //assert
+        assertThrows(InputMismatchException.class, () -> bookManager.printListOfAuthorsByGenre(BookGenre.FANTASY), "There is no books in your manager");
     }
 
     @Test

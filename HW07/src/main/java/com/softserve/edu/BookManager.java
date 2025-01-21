@@ -31,12 +31,7 @@ public class BookManager {
         }
         String result;
         var authors = books.stream().map(Book::getAuthor).collect(Collectors.toSet());
-        if(authors.isEmpty()){
-            result = "No matches!";
-        }
-        else{
-            result = "Authors of all books: " + authors.toString();
-        }
+        result = "Authors of all books: " + authors.toString();
         System.out.println(result);
         return result;
     }
