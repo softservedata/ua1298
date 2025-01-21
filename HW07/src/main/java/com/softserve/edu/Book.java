@@ -1,5 +1,7 @@
 package com.softserve.edu;
 
+import java.util.Objects;
+
 public class Book {
     private String title;
     private String author;
@@ -67,10 +69,22 @@ public class Book {
     public String toString() {
         return "Book{" +
                 "title='" + title + '\'' +
-                ", author='" + author + '\'' +
-                ", genre=" + genre +
-                ", year=" + year +
+                " - author='" + author + '\'' +
+                " - genre=" + genre +
+                " - year=" + year +
                 "}\n";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Book book = (Book) o;
+        return year == book.year && Objects.equals(title, book.title) && Objects.equals(author, book.author) && genre == book.genre;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, author, genre, year);
     }
 }
 

@@ -10,11 +10,11 @@ public class BookManager {
     }
 
     public BookManager(ArrayList<Book> books){
-        this.books = (List<Book>)books.clone();
+        this.books = new ArrayList<>(books);
     }
 
     public BookManager(Book[] books){
-        this.books = List.of(books);
+        this.books = new ArrayList<>(List.of(books));
     }
 
     public List<Book> getBooks() {
@@ -120,6 +120,9 @@ public class BookManager {
         if(books.isEmpty()){
             throw new InputMismatchException("There is no books in your manager");
         }
+        if(findBookByAuthor(author).equals("No matches!")){
+            throw new InputMismatchException("There is nothing to be removed!");
+        }
         books.removeAll(books.stream().filter(book-> Objects.equals(book.getAuthor(), author)).toList());
     }
 
@@ -139,6 +142,9 @@ public class BookManager {
     }
 
     public Collection<Book> subCollectionByGenre(BookGenre genre){
+        if(findBooksByGenre(genre).equals("No matches!")){
+            throw new InputMismatchException("There is nothing to add to subcollection!");
+        }
         return books.stream().filter(book -> book.getGenre() == genre).toList();
     }
 
@@ -168,6 +174,6 @@ public class BookManager {
                 new Book("The Girl on the Train", "Paula Hawkins", BookGenre.THRILLER, 2015)
         };
         BookManager bookManager = new BookManager(books);
-        System.out.println(bookManager.printListOfAuthors());
+        bookManager.removeBooksByAuthor("Stephen King");
     }
 }
