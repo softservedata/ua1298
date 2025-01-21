@@ -133,19 +133,21 @@ public class BookManager {
         books.sort(comparator);
     }
 
-    public static Collection<Book> combineBookCollections(Collection<Book> firstCollection, Collection<Book> secondCollection){
+    public static BookManager combineBookCollections(Collection<Book> firstCollection, Collection<Book> secondCollection){
         if(firstCollection.isEmpty() || secondCollection.isEmpty()){
-            throw new InputMismatchException("There is no books in given collection");
+            throw new InputMismatchException("There is no books in given collections");
         }
         firstCollection.addAll(secondCollection);
-        return firstCollection;
+        BookManager result = new BookManager();
+        result.setBooks(firstCollection.stream().toList());
+        return result;
     }
 
     public Collection<Book> subCollectionByGenre(BookGenre genre){
         if(findBooksByGenre(genre).equals("No matches!")){
             throw new InputMismatchException("There is nothing to add to subcollection!");
         }
-        return books.stream().filter(book -> book.getGenre() == genre).toList();
+        return new ArrayList<>(books.stream().filter(book -> book.getGenre() == genre).toList());
     }
 
 

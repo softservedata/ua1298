@@ -1,12 +1,11 @@
 package com.softserve.edu;
 
+import com.gargoylesoftware.htmlunit.CollectingAlertHandler;
 import com.sun.source.tree.AssertTree;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.InputMismatchException;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,6 +36,110 @@ class BookManagerTest {
             new Book("Gone Girl", "Gillian Flynn", BookGenre.THRILLER, 2012),
             new Book("The Girl on the Train", "Paula Hawkins", BookGenre.THRILLER, 2015)
         };
+    }
+
+    @Test
+    void checkSubCollectionByGenreWithExistingGenreAndManyBooksDifferentGenres() {
+        //arrange
+        BookManager bookManager = new BookManager(books);
+        //act
+        Collection<Book> subCollectionInFantasy = bookManager.subCollectionByGenre(BookGenre.FANTASY);
+        //assert
+        assertEquals(5, subCollectionInFantasy.size());
+        assertTrue(subCollectionInFantasy.contains(books[0]));
+        assertTrue(subCollectionInFantasy.contains(books[2]));
+        assertTrue(subCollectionInFantasy.contains(books[4]));
+        assertFalse(subCollectionInFantasy.contains(books[5]));
+        assertFalse(subCollectionInFantasy.contains(books[20]));
+    }
+
+    @Test
+    void checkSubCollectionByGenreWithExistingGenreAndManyBooksOneGenre() {
+        //arrange
+        BookManager bookManager = new BookManager(new Book[]{books[20], books[19], books[18]});
+        //act
+        Collection<Book> subCollectionInRomance = bookManager.subCollectionByGenre(BookGenre.THRILLER);
+        //assert
+        assertEquals(3, subCollectionInRomance.size());
+        assertTrue(subCollectionInRomance.contains(books[20]));
+        assertTrue(subCollectionInRomance.contains(books[18]));
+        assertFalse(subCollectionInRomance.contains(books[0]));
+        assertFalse(subCollectionInRomance.contains(books[17]));
+    }
+
+    @Test
+    void checkSubCollectionByGenreWithNonExistingGenreThrowsException() {
+        //arrange
+        BookManager bookManager = new BookManager(new Book[]{});
+        //act
+        //assert
+        assertThrows(InputMismatchException.class, () -> bookManager.subCollectionByGenre(BookGenre.FANTASY));
+        assertThrows(InputMismatchException.class, () -> bookManager.subCollectionByGenre(BookGenre.THRILLER));
+        assertThrows(InputMismatchException.class, () -> bookManager.subCollectionByGenre(BookGenre.ROMANCE));
+    }
+
+    @Test
+    void checkSubCollectionByGenreWithExistingGenreAndOneBook() {
+        //arrange
+        BookManager bookManager = new BookManager(new Book[]{books[6]});
+        //act
+        Collection<Book> subCollectionInRomance = bookManager.subCollectionByGenre(BookGenre.ROMANCE);
+        //assert
+        assertEquals(1, subCollectionInRomance.size());
+        assertTrue(subCollectionInRomance.contains(books[6]));
+        assertFalse(subCollectionInRomance.contains(books[0]));
+        assertFalse(subCollectionInRomance.contains(books[20]));
+    }
+
+    @Test
+    void checkCombineBookCollectionsWithValidCollectionsWithManyBooks() {
+        //arrange
+        BookManager bookManager1 = new BookManager(new Book[]{books[0], books[1], books[2], books[3], books[4]});
+        BookManager bookManager2 = new BookManager(new Book[]{books[5], books[6], books[7], books[8], books[9]});
+        int expectedLength = bookManager2.getBooks().size() + bookManager1.getBooks().size();
+        //act
+        BookManager combinationManager = BookManager.combineBookCollections(bookManager1.getBooks(), bookManager2.getBooks());
+        //assert
+        assertEquals(expectedLength, combinationManager.getBooks().size());
+        assertEquals(books[0], combinationManager.getBooks().getFirst());
+        assertEquals(books[expectedLength - 1], combinationManager.getBooks().get(expectedLength - 1));
+        assertEquals(books[expectedLength / 2], combinationManager.getBooks().get(expectedLength / 2));
+    }
+
+    @Test
+    void checkCombineBookCollectionsWithValidCollectionsWithOnlyOneBook() {
+        //arrange
+        BookManager bookManager1 = new BookManager(new Book[]{books[0]});
+        BookManager bookManager2 = new BookManager(new Book[]{books[20]});
+        int expectedLength = bookManager2.getBooks().size() + bookManager1.getBooks().size();
+        Book expectedLastBook = books[20];
+        //act
+        BookManager combinationManager = BookManager.combineBookCollections(bookManager1.getBooks(), bookManager2.getBooks());
+        //assert
+        assertEquals(expectedLength, combinationManager.getBooks().size());
+        assertEquals(books[0], combinationManager.getBooks().getFirst());
+        assertEquals(expectedLastBook, combinationManager.getBooks().get(expectedLength - 1));
+    }
+
+    @Test
+    void checkCombineBookCollectionsWithEmptyOneCollection() {
+        //arrange
+        BookManager bookManager1 = new BookManager(new Book[]{});
+        BookManager bookManager2 = new BookManager(new Book[]{books[20]});
+        //act
+        //assert
+        assertThrows(InputMismatchException.class, () -> BookManager.combineBookCollections(bookManager1.getBooks(), bookManager2.getBooks()), "There is no books in given collections");
+        assertThrows(InputMismatchException.class, () -> BookManager.combineBookCollections(bookManager2.getBooks(), bookManager1.getBooks()), "There is no books in given collections");
+    }
+
+    @Test
+    void checkCombineBookCollectionsWithEmptyTwoCollections() {
+        //arrange
+        BookManager bookManager1 = new BookManager(new Book[]{});
+        BookManager bookManager2 = new BookManager(new Book[]{});
+        //act
+        //assert
+        assertThrows(InputMismatchException.class, () -> BookManager.combineBookCollections(bookManager1.getBooks(), bookManager2.getBooks()), "There is no books in given collections");
     }
 
     @Test
@@ -101,6 +204,7 @@ class BookManagerTest {
         assertThrows(InputMismatchException.class, () -> bookManager.sortCollectionByCriteria(Comparator.comparing(Book::getTitle)));
         assertThrows(InputMismatchException.class, () -> bookManager.sortCollectionByCriteria(Comparator.comparing(Book::getGenre)));
     }
+
     @Test
     void checkRemoveBooksByExistingAuthor() {
         //arrange
@@ -273,7 +377,7 @@ class BookManagerTest {
         //arrange
         BookManager bookManager = new BookManager(books);
         //act
-        var resultWithTwoRecords = bookManager.printListOfAuthorsByPublicationYear(1937).split("[\\[,]");
+        var resultWithTwoRecords = bookManager.printListOfAuthorsByPublicationYear(2015).split("[\\[,]");
         var resultWithSingleRecord = bookManager.printListOfAuthorsByPublicationYear(2005).split("[\\[,]");
         //assert
         assertEquals(3, resultWithTwoRecords.length);
@@ -447,13 +551,5 @@ class BookManagerTest {
         //act
         //assert
         assertThrows(InputMismatchException.class, () -> bookManager.printListOfAuthorsByGenre(BookGenre.FANTASY), "There is no books in your manager");
-    }
-
-    @Test
-    void combineBookCollections() {
-    }
-
-    @Test
-    void subCollectionByGenre() {
     }
 }
