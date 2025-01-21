@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Form for study case</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 50%;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 20px;
+      background: #50b3a2;
+      color: white;
+    }
+
+    .formContainer {
+      padding: 30px;
+      background: #fff;
+    }
+
+
+ label,
+    select {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"],
+    select {
+      width: calc(100% - 22px);
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      box-sizing: border-box;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    button,
+    input[type="button"] {
+      background: #50b3a2;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover,
+    input[type="button"]:hover {
+      background: #338773;
+    }
+  </style>
+
+<script>
+    function myAlert() {
+      alert("Thanks for clicking!");
+    }
+  </script>
+</head>
+
+<body>
+<div class="container">
+  <h1 class="mainHeading">CSS Selector Test Page</h1>
+  <div class="formContainer">
+    <form class="mainForm">
+      <label for="textInput">
+        Type something:
+        <input type="text" class="textInput" id="textInput" />
+      </label>
+      <label for="checkboxInput">
+        <input type="checkbox" class="checkboxInput" name="checkboxName" id="checkboxInput" />I want one.
+      </label>
+      <label for="optionSelect">Choose your preference:</label>
+      <select id="optionSelect" class="optionSelect">
+        <option value="option1">Option 1</option>
+        <option value="option2">Option 2</option>
+        <option value="option3">Option 3</option>
+      </select>
+      <label>Choose:</label>
+      <label for="radioThisInput">
+        <input type="radio" class="radioInput" name="radioGroup" value="radioThisValue" id="radioThisInput" />This
+      </label>
+      <label for="radioThatInput">
+        <input type="radio" class="radioInput" name="radioGroup" value="radioThatValue" id="radioThatInput" />That
+      </label>
+      <button type="reset" value="Reset">Clear Form</button>
+      <input type="button" class="submitButton" value="Submit" onclick="myAlert()" />
+    </form>
+  </div>
+</div>
+</body>
