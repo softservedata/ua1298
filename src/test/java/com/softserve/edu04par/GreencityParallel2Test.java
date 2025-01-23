@@ -20,15 +20,18 @@ public class GreencityParallel2Test {
     private static final String BASE_URL = "https://www.greencity.cx.ua/#/ubs";
     public static final int MAX_IMPLICITLY_WAIT = 10;
     //private static WebDriver driver;
-    private static Map<Long,WebDriver> drivers;
+    //private static Map<Long,WebDriver> drivers;
+    private static ThreadLocal<WebDriver> drivers;
 
     private WebDriver getDriver() {
-        WebDriver currentDriver = drivers.get(Thread.currentThread().getId());
+        //WebDriver currentDriver = drivers.get(Thread.currentThread().getId());
+        WebDriver currentDriver = drivers.get();
         if (currentDriver == null) {
             currentDriver = new ChromeDriver();
             currentDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(MAX_IMPLICITLY_WAIT));
             currentDriver.manage().window().maximize();
-            drivers.put(Thread.currentThread().getId(),currentDriver);
+            //drivers.put(Thread.currentThread().getId(),currentDriver);
+            drivers.set(currentDriver);
         }
         return currentDriver;
     }
@@ -44,7 +47,8 @@ public class GreencityParallel2Test {
         //driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(MAX_IMPLICITLY_WAIT));
         //driver.manage().window().maximize();
         //
-        drivers = new HashMap<>();
+        //drivers = new HashMap<>();
+        drivers = new ThreadLocal<>();
         //
         System.out.println("@BeforeAll executed, ThreadId = " + Thread.currentThread().getId());
     }
@@ -55,13 +59,13 @@ public class GreencityParallel2Test {
 //            driver.quit();
 //            //driver.close();
 //        }
-        //
+        /*
         if (drivers != null) {
             for(Map.Entry<Long,WebDriver> entry : drivers.entrySet()) {
                 entry.getValue().quit();
             }
         }
-        //
+        */
         System.out.println("@AfterAll executed, ThreadId = " + Thread.currentThread().getId());
     }
 
@@ -76,6 +80,10 @@ public class GreencityParallel2Test {
     public void tearThis() throws InterruptedException {
         // logout, clear cookies, delete token
         Thread.sleep(10000); // For Presentation ONLY;
+        //
+        if (drivers.get() != null) {
+            drivers.get().quit();
+        }
         //
         System.out.println("\t@AfterEach executed, ThreadId = " + Thread.currentThread().getId());
     }
