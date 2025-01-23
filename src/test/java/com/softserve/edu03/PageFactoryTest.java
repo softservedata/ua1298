@@ -1,5 +1,7 @@
 package com.softserve.edu03;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.WebDriver;
@@ -105,6 +107,7 @@ public class PageFactoryTest {
         presentationSleep(); // For Presentation ONLY
         email.sendKeys("ha-ha-ha");
         //
-        Assertions.assertEquals("ha-ha-ha", email.getAttribute("value"));
+        //Assertions.assertEquals("ha-ha-ha", email.getAttribute("value"));
+        assertEquals("ha-ha-ha", email.getAttribute("value"));
     }
 }
