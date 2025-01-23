@@ -57,6 +57,9 @@ public class Rectangle {
 
         return (width > 0) && (height > 0) && (angle == 90.0);
     }
+    public static Rectangle create(double width, double height) {
+        return new Rectangle(width, height);
+    }
 
     public double calculateArea(){
         isItRectangle();
