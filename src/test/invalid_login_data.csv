@@ -1,0 +1,5 @@
+email, password, expectedMessage
+samplestesgreencity.com, uT346^^^erw, Please check that your e-mail address is indicated correctly
+validemail@example.com, gfhjkm12345678, Bad email or password
+123.gmail.com, Password123!, Please check that your e-mail address is indicated correctly
+testemail@example.com, wrongpassword, Bad email or password
