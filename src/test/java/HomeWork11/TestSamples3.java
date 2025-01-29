@@ -1,19 +1,17 @@
-package HomeWork10;
+package HomeWork11;
+
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.WebDriver;
+import org.junit.jupiter.params.provider.CsvFileSource;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
-
 
 public class TestSamples3 {
 
@@ -39,6 +37,20 @@ public class TestSamples3 {
     static void tearDown() {
         if (driver != null) {
             driver.quit();
+        }
+    }
+
+    @AfterEach
+    void resetState() {
+        try {
+            if (isElementPresent(closeModalButton)) {
+                closeModalButton.click();
+                System.out.println("Modal window closed."); // **Добавлено для логирования**
+            } else {
+                System.out.println("Modal window not found."); // **Добавлено для логирования**
+            }
+        } catch (Exception e) {
+            System.out.println("Issue during modal close: " + e.getMessage()); // **Добавлено для логирования ошибок**
         }
     }
 
@@ -93,89 +105,83 @@ public class TestSamples3 {
     @FindBy(xpath = "//a[@class='close-modal-window']")
     private WebElement closeModalButton;
 
+    private boolean isElementPresent(WebElement element) {
+        try {
+            wait.until(ExpectedConditions.visibilityOf(element));
+            return element.isDisplayed();
+        } catch (Exception e) {
+            System.out.println("Element not found: " + e.getMessage()); // **Добавлено для логирования**
+            return false;
+        }
+    }
+
     public void switchToEnglish() {
         languageSwitcher.click();
         englishOption.click();
     }
 
-    @DisplayName("Verify title of the page.")
+    private void enterCredentials(String email, String password) {
+        wait.until(ExpectedConditions.visibilityOf(emailInput)).clear();
+        emailInput.sendKeys(email);
+
+        wait.until(ExpectedConditions.visibilityOf(passwordInput)).clear();
+        passwordInput.sendKeys(password);
+
+        WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(signInSubmitButton));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", submitButton);
+    }
+
+    private void signOut() {
+        wait.until(ExpectedConditions.visibilityOf(userMenuButton)).click();
+        wait.until(ExpectedConditions.elementToBeClickable(signOutButton)).click();
+        Assertions.assertTrue(wait.until(ExpectedConditions.visibilityOf(signInButton)).isDisplayed(), "Sign out was not successful.");
+    }
+
+    private void closeErrorModal() {
+        wait.until(ExpectedConditions.elementToBeClickable(closeModalButton)).click();
+    }
+
     @Test
+    @DisplayName("Verify title of the page.")
     public void verifyTitle() {
         Assertions.assertEquals("GreenCity", driver.getTitle());
     }
 
     @ParameterizedTest
-    @CsvSource({
-            "levjuli98@gmail.com, 12345Yulia!",
-
-    })
+    @CsvFileSource(resources = "/valid-login-data.csv", numLinesToSkip = 1)
     @DisplayName("Verify valid sign in and sign out.")
     public void testValidSignInAndSignOut(String email, String password) {
         signInButton.click();
-
-        // Wait for email input visibility
-        WebElement userEmail = wait.until(ExpectedConditions.visibilityOf(emailInput));
-        userEmail.clear();
-        userEmail.sendKeys(email);
-
-        // Wait for password input visibility
-        WebElement userPassword = wait.until(ExpectedConditions.visibilityOf(passwordInput));
-        userPassword.clear();
-        userPassword.sendKeys(password);
-
-        // Wait and click the log-in button
-        WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(signInSubmitButton));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", submitButton);
-
-        // Verify "My habits" tab is visible
-        WebElement habitsTab = wait.until(ExpectedConditions.visibilityOf(myHabitsTab));
-        Assertions.assertTrue(habitsTab.isDisplayed(), "The 'My habits' tab is not visible after login.");
-
-        // Sign out
-        WebElement userMenu = wait.until(ExpectedConditions.visibilityOf(userMenuButton));
-        userMenu.click();
-
-        WebElement signOut = wait.until(ExpectedConditions.elementToBeClickable(signOutButton));
-        signOut.click();
-
-        // Verify successful sign out (check for sign-in button visibility again)
-        WebElement signInVisible = wait.until(ExpectedConditions.visibilityOf(signInButton));
-        Assertions.assertTrue(signInVisible.isDisplayed(), "Sign out was not successful.");
+        enterCredentials(email, password);
+        Assertions.assertTrue(wait.until(ExpectedConditions.visibilityOf(myHabitsTab)).isDisplayed(), "Login failed.");
+        signOut();
     }
 
     @ParameterizedTest
-    @CsvSource({
-            "testgreencity.com, 347593-!, Please check that your e-mail address is indicated correctly",
-            "validemail@ggmail.com, juli12345!, Bad email or password"
-    })
+    @CsvFileSource(resources = "/invalid-login-data.csv", numLinesToSkip = 1)
     @DisplayName("Verify invalid sign in.")
     public void testInvalidSignIn(String email, String password, String expectedMessage) {
         signInButton.click();
+        enterCredentials(email, password);
 
-        // Wait for email input visibility
-        WebElement userEmail = wait.until(ExpectedConditions.visibilityOf(emailInput));
-        userEmail.clear();
-        userEmail.sendKeys(email);
 
-        // Wait for password input visibility
-        WebElement userPassword = wait.until(ExpectedConditions.visibilityOf(passwordInput));
-        userPassword.clear();
-        userPassword.sendKeys(password);
+        WebElement errorMessage = null;
+        try {
+            errorMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class, 'alert-general-error') and contains(text(), 'Bad email or password')]")));
+        } catch (TimeoutException e) {
 
-        // Wait and click the log-in button
-        WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(signInSubmitButton));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", submitButton);
-
-        // Error message is displayed
-        if (email.contains("testgreencity.com")) {
-            wait.until(ExpectedConditions.visibilityOf(errorEmail));
-            Assertions.assertEquals(expectedMessage, errorEmail.getText(), "Error message does not match expected.");
-        } else {
-            wait.until(ExpectedConditions.visibilityOf(errorPassword));
-            Assertions.assertEquals(expectedMessage, errorPassword.getText(), "Error message does not match expected.");
+            try {
+                errorMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(text(), 'Please check that your e-mail address')]")));
+            } catch (TimeoutException ex) {
+                Assertions.fail("Error message not found.");
+            }
         }
 
-        // Close window
-        wait.until(ExpectedConditions.elementToBeClickable(closeModalButton)).click();
+        Assertions.assertNotNull(errorMessage, "Error message element is null.");
+        Assertions.assertTrue(errorMessage.isDisplayed(), "Error message is not visible.");
+        Assertions.assertEquals(expectedMessage, errorMessage.getText(), "Error message does not match expected.");
+
+        closeErrorModal();
     }
+
 }
