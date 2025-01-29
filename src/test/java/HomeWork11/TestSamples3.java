@@ -11,6 +11,7 @@ import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+
 import java.time.Duration;
 
 public class TestSamples3 {
@@ -148,7 +149,7 @@ public class TestSamples3 {
     }
 
     @ParameterizedTest
-    @CsvFileSource(resources = "/valid-login-data.csv", numLinesToSkip = 1)
+    @CsvFileSource(resources = "/valid-data.csv", numLinesToSkip = 1)
     @DisplayName("Verify valid sign in and sign out.")
     public void testValidSignInAndSignOut(String email, String password) {
         signInButton.click();
@@ -158,7 +159,7 @@ public class TestSamples3 {
     }
 
     @ParameterizedTest
-    @CsvFileSource(resources = "/invalid-login-data.csv", numLinesToSkip = 1)
+    @CsvFileSource(resources = "/invalid-data.csv", numLinesToSkip = 1)
     @DisplayName("Verify invalid sign in.")
     public void testInvalidSignIn(String email, String password, String expectedMessage) {
         signInButton.click();
