@@ -4,9 +4,8 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.FindBy;
@@ -19,9 +18,9 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GreenCityDockerSigningInTest {
     @FindBy(css = ".header_sign-in-link.tertiary-global-button")
@@ -42,22 +41,28 @@ public class GreenCityDockerSigningInTest {
     private WebElement signInSubmitButton;
 
 
-    @FindBy(css="header_user-name")
+    @FindBy(css="a.header_user-name")
     private WebElement result;
-    @FindBy(css = ".alert-general-error")
+    @FindBy(css = "div.alert-general-error.ng-star-inserted")
     private WebElement errorMessage;
-    @FindBy(xpath = "div#password-err-msg div")
+    @FindBy(css = "div.validation-password-error.ng-star-inserted div")
     private WebElement errorPassword;
-    @FindBy(xpath = "div#email-err-msg div")
+    @FindBy(css = "div#email-err-msg div")
     private WebElement errorEmail;
     @FindBy(css = "li.lang-option span")
     private WebElement curLang;
-    @FindBy(css = "li.ng-star-inserted[aria-label='En'] span")
+    @FindBy(css = "li[aria-label='En'] span")
     private WebElement lang;
+
+    @FindBy(css = ".cross-btn")
+    private WebElement crossButton;
 
     private static final String BASE_URL = "http://localhost:4205/#/greenCity";
     private static WebDriver driver;
-    private static long oneSec = 1;
+    private static final long oneSec = 1;
+    private static final long threeSec = 3;
+    private static final long fiveSec = 5;
+
 
     @BeforeAll
     public static void setUp() {
@@ -68,17 +73,17 @@ public class GreenCityDockerSigningInTest {
 //        options.setExperimentalOption("useAutomationExtension", false);
         driver = new ChromeDriver();
         driver.get(BASE_URL);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(oneSec * 5L));
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(fiveSec));
         driver.manage().window().maximize();
     }
     @BeforeEach
     public void initPageElements() {
         PageFactory.initElements(driver, this);
     }
+
     @Test
     public void verifyTitleTest() {
-        assertTrue(Objects.requireNonNull(driver.getTitle()).contains("GreenCity"));
-        assertEquals("GreenCity - Build Eco-Friendly Habits Today", driver.getTitle());
+        assertEquals("GreenCity", driver.getTitle());
     }
 
     private void closeIframeIfExists(){
@@ -94,7 +99,7 @@ public class GreenCityDockerSigningInTest {
     }
 
     private void changeLangToEn(){
-        if(!Objects.equals(curLang.getDomProperty("value"), "En")){
+        if(!Objects.equals(curLang.getText().toUpperCase(), "EN")){
             curLang.click();
             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(oneSec));
             lang.click();
@@ -102,39 +107,174 @@ public class GreenCityDockerSigningInTest {
     }
 
     @Test
-    public void signInWithValidDataTest() throws InterruptedException {
+    public void checkSignInWithValidDataTest() {
         //arrange
         String login = System.getenv("USER_LOGIN");
         String pass = System.getenv("USER_PASSWORD");
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(2));
         //act
         changeLangToEn();
         signInButton.click();
         closeIframeIfExists();
 
-//        assertEquals(welcomeText.getText(), "Welcome back!");
-//        assertEquals(signInDetailsText.getText(), "Please enter your details to sign in.");
-//        assertEquals(emailLabel.getText(), "Email");
         emailInput.clear();
         emailInput.sendKeys(login);
         assertEquals(emailInput.getDomProperty("value"), login);
         passwordInput.clear();
+        assertFalse(signInSubmitButton.isEnabled());
         passwordInput.sendKeys(pass);
         assertEquals(passwordInput.getDomProperty("value"), pass);
+        assertTrue(signInSubmitButton.isEnabled());
         signInSubmitButton.click();
-        WebElement userBox = wait.until(ExpectedConditions.visibilityOf(result));
-        assertTrue(userBox.isDisplayed());
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(threeSec));
+        assertTrue(result.isDisplayed());
     }
-    @ParameterizedTest
-    @CsvSource({
-            "Please check if the email is written correctly"
-    })
-    public void signInNotValidTest(String message) {
+
+    @Test
+    public void checkSignInCheckLabelTextsTest(){
+        //arrange
+        //act
+        changeLangToEn();
         signInButton.click();
-        emailInput.sendKeys("samplestesgreencity.com");
-        passwordInput.sendKeys("uT346^^^erw");
-        assertEquals(errorEmail.getText(), message);
+        closeIframeIfExists();
+
+        assertEquals("Welcome back!", welcomeText.getText());
+        assertEquals("Please enter your details to sign in.", signInDetailsText.getText());
+        assertEquals("Email", emailLabel.getText());
+        assertEquals("Password", passwordLabel.getText());
+        assertEquals("Sign in", signInSubmitButton.getText());
+        assertFalse(signInSubmitButton.isEnabled());
     }
+
+    @Test   //If first time don`t work - rerun
+    public void checkSignInCheckErrorMessagesExistsTest() throws InterruptedException {
+        //arrange
+        String invalidInputEmail = "justTest.com";
+        String tooShortPassword = "pass";
+        String[] errorsLocators = new String[]{"div.alert-general-error.ng-star-inserted", "div#email-err-msg div", "div.validation-password-error.ng-star-inserted div"};
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        //act
+        changeLangToEn();
+        signInButton.click();
+        closeIframeIfExists();
+
+        emailInput.click();
+        passwordInput.click();
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(threeSec));
+        new WebDriverWait(driver, Duration.ofSeconds(fiveSec)).until(ExpectedConditions.visibilityOf(errorEmail));
+        assertTrue(errorEmail.isDisplayed());
+        assertTrue((boolean) js.executeScript("return document.querySelectorAll(arguments[0]).length === 0"), errorsLocators[0]);
+        assertTrue((boolean) js.executeScript("return document.querySelectorAll(arguments[0]).length === 0"), errorsLocators[2]);
+        assertEquals("Email is required", errorEmail.getText());
+        emailInput.click();
+        assertTrue(errorMessage.isDisplayed());
+        assertTrue((boolean) js.executeScript("return document.querySelectorAll(arguments[0]).length === 0"), errorsLocators[1]);
+        assertTrue((boolean) js.executeScript("return document.querySelectorAll(arguments[0]).length === 0"), errorsLocators[2]);
+        assertEquals("Please fill all red fields", errorMessage.getText());
+        emailInput.sendKeys(invalidInputEmail);
+        assertTrue(errorPassword.isDisplayed());
+        assertTrue((boolean) js.executeScript("return document.querySelectorAll(arguments[0]).length === 0"), errorsLocators[1]);
+        assertTrue((boolean) js.executeScript("return document.querySelectorAll(arguments[0]).length === 0"), errorsLocators[0]);
+        assertEquals("Password is required", errorPassword.getText());
+        emailInput.clear();
+        emailInput.sendKeys("a");
+        emailInput.sendKeys(Keys.BACK_SPACE);
+        passwordInput.click();
+        assertTrue(errorMessage.isDisplayed());
+        assertTrue((boolean) js.executeScript("return document.querySelectorAll(arguments[0]).length === 0"), errorsLocators[1]);
+        assertTrue((boolean) js.executeScript("return document.querySelectorAll(arguments[0]).length === 0"), errorsLocators[2]);
+        assertEquals("Please fill all red fields", errorMessage.getText());
+
+        crossButton.click();
+        signInButton.click();
+
+        emailInput.sendKeys(invalidInputEmail);
+        passwordInput.click();
+        assertTrue(errorEmail.isDisplayed());
+        assertTrue((boolean) js.executeScript("return document.querySelectorAll(arguments[0]).length === 0"), errorsLocators[0]);
+        assertTrue((boolean) js.executeScript("return document.querySelectorAll(arguments[0]).length === 0"), errorsLocators[2]);
+        assertEquals("Please check that your e-mail address is indicated correctly", errorEmail.getText());
+
+        passwordInput.sendKeys(tooShortPassword);
+        emailInput.click();
+        assertTrue(errorEmail.isDisplayed());
+        assertTrue(errorPassword.isDisplayed());
+        assertTrue((boolean) js.executeScript("return document.querySelectorAll(arguments[0]).length === 0"), errorsLocators[0]);
+        assertEquals("Password must be at least 8 characters long without spaces", errorPassword.getText());
+    }
+
+    static Stream<Object[]> invalidDataSource(){
+        String validEmail = "somovoy449@mywebw.com";
+        String validPassword = "Qwerty1!";
+        String invalidEmail = "test.login@sth.com";
+        String invalidPassword = "invalid pass";
+        return Stream.of(
+                new Object[]{validEmail, invalidPassword},
+                new Object[]{invalidEmail, validPassword},
+                new Object[]{invalidEmail, invalidPassword}
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidDataSource")
+    public void checkSignInWithInvalidCredentials(String email, String password) {
+        // Arrange
+        changeLangToEn();
+        signInButton.click();
+        closeIframeIfExists();
+
+        emailInput.clear();
+        emailInput.sendKeys(email);
+        assertEquals(emailInput.getDomProperty("value"), email);
+
+        passwordInput.clear();
+        assertFalse(signInSubmitButton.isEnabled());
+
+        passwordInput.sendKeys(password);
+        assertEquals(passwordInput.getDomProperty("value"), password);
+        assertTrue(signInSubmitButton.isEnabled());
+
+        signInSubmitButton.click();
+        new WebDriverWait(driver, Duration.ofSeconds(5))
+                .until(ExpectedConditions.visibilityOf(errorMessage));
+
+        assertTrue(errorMessage.isDisplayed());
+        assertEquals("Bad email or password", errorMessage.getText());
+
+        assertTrue(emailInput.isDisplayed());
+        assertTrue(passwordInput.isDisplayed());
+        assertTrue(signInSubmitButton.isDisplayed());
+        crossButton.click();
+    }
+
+    @Test
+    public void checkButtonClickableTest(){
+        String login = System.getenv("USER_LOGIN");
+        String pass = System.getenv("USER_PASSWORD");
+
+        changeLangToEn();
+        signInButton.click();
+        closeIframeIfExists();
+
+        assertFalse(signInSubmitButton.isEnabled());
+        emailInput.clear();
+        emailInput.sendKeys(login);
+        assertFalse(signInSubmitButton.isEnabled());
+        passwordInput.clear();
+        passwordInput.click();
+        emailInput.click();
+        assertFalse(signInSubmitButton.isEnabled());
+        emailInput.clear();
+        passwordInput.click();
+        passwordInput.sendKeys(pass);
+        assertFalse(signInSubmitButton.isEnabled());
+        emailInput.click();
+        passwordInput.click();
+        assertFalse(signInSubmitButton.isEnabled());
+        emailInput.sendKeys(login);
+        assertTrue(signInSubmitButton.isEnabled());
+    }
+
     @AfterAll
     public static void tearDown() {
         driver.quit();
