@@ -195,6 +195,7 @@ public class AjaxTest {
 		System.out.println("tdNevadaSecondData.getText() = " + tdNevadaSecondData.getText());
 		//System.out.println("R: tdNevadaFirstData.getText() = " + tdNevadaFirstData.getText());
 		presentationSleep(4); // DO NOT USE
+		//driver.switchTo().defaultContent();
 	}
 
 }
