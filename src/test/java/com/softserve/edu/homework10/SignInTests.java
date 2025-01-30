@@ -53,33 +53,28 @@ public class SignInTests {
     private static WebDriver driver;
     private WebDriverWait wait;
 
-
     @BeforeEach
-    public void setUp() {
+    public  void setUp(){
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
         driver.get("http://localhost:4205/#/greenCity");
         driver.manage().window().maximize();
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-
-
-        PageFactory.initElements(driver, this);
-        switchLanguageToEnglish();
-
     }
 
+    @BeforeEach
+    public void initPageElements() {
+        PageFactory.initElements(driver, this);
+        switchLanguage.click();
+        languageEn.click();
+
+    }
     @AfterEach
     void tearDown() {
         if (driver != null) {
             driver.quit();
         }
     }
-
-    public void switchLanguageToEnglish() {
-        wait.until(ExpectedConditions.elementToBeClickable(switchLanguage)).click();
-        wait.until(ExpectedConditions.elementToBeClickable(languageEn)).click();
-    }
-
 
     @Test
     public void testVerifyTitle() {
@@ -93,68 +88,57 @@ public class SignInTests {
             "anotheruser@greencity.com, anotherpassword",
             "user13@gmail.com , passWord1!"
     })
-    public void testSignIn(String email, String password) {
-        wait.until(ExpectedConditions.elementToBeClickable(signInButton)).click();
+    public void testSignIn(String email, String password){
 
-        assertThat(wait.until(ExpectedConditions.visibilityOf(welcomeText)).getText(), is("Welcome back!"));
+        signInButton.click();
+        assertThat(welcomeText.getText(), is("Welcome back!"));
         assertThat(signInDetailsText.getText(), is("Please enter your details to sign in."));
         assertThat(emailLabel.getText(), is("Email"));
-
         emailInput.sendKeys(email);
+        assertThat(emailInput.getAttribute("value"), is(email));
         passwordInput.sendKeys(password);
-
-        wait.until(ExpectedConditions.elementToBeClickable(submitButton));
+        assertThat(passwordInput.getAttribute("value"), is(password));
+        submitButton.click();
 
     }
-
     @ParameterizedTest
     @CsvSource({
             " samplestesgreencity.com , uT346^^^erw ",
             " емейл@gmail.сom ,uT346^^^erw ",
-            " daffa@gmail , uT346^^^erw"
+            " daffa@gmail,сom , uT346^^^erw"
 
     })
-    public void testSignInNotValidEmail(String email, String password) {
-
-        wait.until(ExpectedConditions.elementToBeClickable(signInButton)).click();
+    public void testSignInNotValidEmail(String email,String password) {
+        signInButton.click();
         emailInput.sendKeys(email);
         passwordInput.sendKeys(password);
-        showPassword.click();
-
-        wait.until(ExpectedConditions.visibilityOf(errorEmail));
         assertThat(errorEmail.getText(), is("Please check that your e-mail address is indicated correctly"));
 
-    }
 
+    }
     @ParameterizedTest
     @CsvSource({
             " samplestesgreencity@gmail.com , 1234567 , Password must be at least 8 characters long without spaces ",
             " samplestesgreencity@gmail.com , aaaaaaaaaaaaaaaaaaaaa , Password must be less than 20 characters long without spaces"
     })
-    public void testSignInNotValidPassword(String email, String password, String expectedError) {
-        wait.until(ExpectedConditions.elementToBeClickable(signInButton)).click();
-
+    public void testSignInNotValidPassword(String email,String password,String expectedError){
+        signInButton.click();
         emailInput.sendKeys(email);
         passwordInput.sendKeys(password);
         showPassword.click();
-
         wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.xpath("//*[contains(text(), '" + expectedError + "')]")));
         assertTrue(errorPassword.isDisplayed(), "Expected email error message is not displayed.");
 
     }
-
     @Test
-    public void testWithNUllValue() {
-        wait.until(ExpectedConditions.elementToBeClickable(signInButton)).click();
-
+    public void testWithNUllValue(){
+        signInButton.click();
         emailInput.click();
         passwordInput.click();
         showPassword.click();
-
-        wait.until(ExpectedConditions.visibilityOf(errorMessage));
-        assertThat(errorMessage.getText(), is("Please fill all red fields"));
-        assertFalse(submitButton.isEnabled(), "The 'Sign Up' button should be disabled.");
+        assertThat(errorMessage.getText(),is("Please fill all red fields"));
+        assertFalse(submitButton.isEnabled(),"The 'Sign Up' button should be disabled.");
     }
 
 }
