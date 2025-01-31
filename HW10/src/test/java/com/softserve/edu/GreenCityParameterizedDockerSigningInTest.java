@@ -1,28 +1,29 @@
 package com.softserve.edu;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class GreenCityDockerSigningInTest {
+public class GreenCityParameterizedDockerSigningInTest {
     @FindBy(css = ".header_sign-in-link.tertiary-global-button")
     private WebElement signInButton;
     @FindBy(css = "div.right-side h1")
@@ -53,6 +54,8 @@ public class GreenCityDockerSigningInTest {
     private WebElement curLang;
     @FindBy(css = "li[aria-label='En'] span")
     private WebElement lang;
+    @FindBy(xpath = "//li[@class='drop-down-item']/a[contains(text(), 'Sign out')]")
+    private WebElement signOutButton;
 
     @FindBy(css = ".cross-btn")
     private WebElement crossButton;
@@ -62,15 +65,12 @@ public class GreenCityDockerSigningInTest {
     private static final long oneSec = 1;
     private static final long threeSec = 3;
     private static final long fiveSec = 5;
+    private static final long tenSec = 10;
 
 
     @BeforeAll
     public static void setUp() {
         WebDriverManager.chromedriver().setup();
-//        ChromeOptions options = new ChromeOptions();
-//        options.addArguments("--disable-blink-features=AutomationControlled");
-//        options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
-//        options.setExperimentalOption("useAutomationExtension", false);
         driver = new ChromeDriver();
         driver.get(BASE_URL);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(fiveSec));
@@ -106,11 +106,9 @@ public class GreenCityDockerSigningInTest {
         }
     }
 
-    @Test
-    public void checkSignInWithValidDataTest() {
-        //arrange
-        String login = System.getenv("USER_LOGIN");
-        String pass = System.getenv("USER_PASSWORD");
+    @ParameterizedTest
+    @CsvFileSource(resources = "resources/validLoggingData.csv", delimiter = ';', numLinesToSkip = 1)
+    public void checkSignInWithValidDataTest(String login, String pass) {
         //act
         changeLangToEn();
         signInButton.click();
@@ -127,6 +125,9 @@ public class GreenCityDockerSigningInTest {
         signInSubmitButton.click();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(threeSec));
         assertTrue(result.isDisplayed());
+
+        result.click();
+        signOutButton.click();
     }
 
     @Test
@@ -216,8 +217,12 @@ public class GreenCityDockerSigningInTest {
     }
 
     @ParameterizedTest
-    @MethodSource("invalidDataSource")
-    public void checkSignInWithInvalidCredentials(String email, String password) {
+    @CsvSource({
+            "somovoy449@mywebw.com, invalid pass",
+            "test.login@sth.com, invalid pass",
+            "test.login@sth.com, Qwerty1!"
+    })
+    public void checkSignInWithInvalidCredentialsTest(String email, String password) {
         // Arrange
         changeLangToEn();
         signInButton.click();
@@ -235,7 +240,7 @@ public class GreenCityDockerSigningInTest {
         assertTrue(signInSubmitButton.isEnabled());
 
         signInSubmitButton.click();
-        new WebDriverWait(driver, Duration.ofSeconds(15))
+        new WebDriverWait(driver, Duration.ofSeconds(tenSec))
                 .until(ExpectedConditions.visibilityOf(errorMessage));
 
         assertTrue(errorMessage.isDisplayed());
