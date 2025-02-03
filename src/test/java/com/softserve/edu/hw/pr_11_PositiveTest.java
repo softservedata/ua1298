@@ -18,7 +18,7 @@ import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class pr_10_PositiveTest {
+public class pr_11_PositiveTest {
         private WebDriver driver;
         private WebDriverWait wait;
 
