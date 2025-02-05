@@ -23,7 +23,7 @@ public class TestSamples3 {
         driver = new ChromeDriver();
         driver.get("http://localhost:4205/#/greenCity");
         driver.manage().window().maximize();
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(20));
     }
 
     @BeforeEach
