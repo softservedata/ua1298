@@ -61,6 +61,10 @@ public class WebUtils {
         javascriptExecutor.executeScript(String.format("window.localStorage.removeItem('%s');", item));
     }
 
+    public void clearLocalStorage() {
+        javascriptExecutor.executeScript(String.format("window.localStorage.clear();"));
+    }
+
     public void fillLocalStorage(UserResponse userResponse, User user) {
         // Fill Local Storage
         setItemLocalStorage("accessToken", userResponse.getAccessToken());
