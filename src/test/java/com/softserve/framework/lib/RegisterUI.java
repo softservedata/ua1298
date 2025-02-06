@@ -6,11 +6,15 @@ import com.softserve.framework.tests.TestRunner;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.List;
 
 public class RegisterUI {
+
+    protected final Logger logger = LoggerFactory.getLogger(RegisterUI.class);
 
     private WebDriver driver;
     private WebUtils webUtils;
@@ -24,6 +28,8 @@ public class RegisterUI {
     }
 
     private void closePopup() {
+        logger.debug("Start closePopup()");
+        //
         // Close popup window
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(TestRunner.MIN_IMPLICITLY_WAIT));
         List<WebElement> iframe = driver.findElements(By.cssSelector("iframe"));
@@ -37,12 +43,17 @@ public class RegisterUI {
         }
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(TestRunner.MAX_IMPLICITLY_WAIT));
         TestRunner.presentationSleep(); // For Presentation ONLY
+        logger.debug("Done closePopup()");
     }
 
     public boolean isSignout() {
+        logger.debug("Start isSignout()");
+        //
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(TestRunner.MIN_IMPLICITLY_WAIT));
         List<WebElement> singinButton = driver.findElements(By.cssSelector("div.main-content.app-container img.ubs-header-sing-in-img.ng-star-inserted"));
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(TestRunner.MAX_IMPLICITLY_WAIT));
+        logger.debug("Done isSignout()");
+        //
         return singinButton.size() > 0;
     }
 

@@ -34,6 +34,8 @@ public class GreencityTest extends TestRunner {
     @ParameterizedTest(name = "{index} => userProvider={0}")
     @MethodSource("userProvider")
         public void checkSignin(User user) {
+        logger.info("Start checkSignin() with User = " + user);
+        //
         // Singin
         registerUI.signin(user, POST_URL);
         //

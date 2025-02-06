@@ -15,6 +15,8 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +39,7 @@ public abstract class TestRunner {
     private static final Long ONE_SECOND_DELAY = 1000L;
     private static final String TIME_TEMPLATE = "yyyy-MM-dd_HH-mm-ss-S";
     private static final String BROWSER_NAME = "browser";
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
     protected static WebDriver driver;
     protected static Boolean isTestSuccessful = false;
     //
@@ -140,10 +143,14 @@ public abstract class TestRunner {
     public void tearThis(TestInfo testInfo) {
         if (!isTestSuccessful) {
             // TODO use logging
+            logger.error("Test_Name = " + testInfo.getTestMethod() + " failed");
+            //
             System.out.println("\t\t\tgetTestMethod = " + testInfo.getTestMethod());
             System.out.println("\t\t\tgetDisplayName = " + testInfo.getDisplayName());
             takeScreenShot();
             takePageSource();
+        } else {
+            logger.info("Test " + testInfo.getTestMethod() + " done.");
         }
         // delete session
         driver.manage().deleteAllCookies(); // clear cache; delete cookie; delete session;
