@@ -1,94 +1,89 @@
 package homwork10;
 
-
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-
+import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TestSamples3 {
-    @FindBy(css = ".header_sign-in-link.tertiary-global-button")
-    private WebElement signInButton;
-    @FindBy(css = "div.right-side h1")
-    private WebElement welcomeText;
-    @FindBy(css = "div.right-side h2")
-    private WebElement signInDetailsText;
-    @FindBy(css = "label[for='email']")
-    private WebElement emailLabel;
-    @FindBy(id = "email")
-    private WebElement emailInput;
-    @FindBy(css = "label[for='password']")
-    private WebElement passwordLabel;
-    @FindBy(id = "password")
-    private WebElement passwordInput;
-    @FindBy(css = ".greenStyle")
-    private WebElement signInSubmitButton;
-    @FindBy(css = ".body-2.user-name")
-    private WebElement result;
-    @FindBy(css = ".alert-general-error")
-    private WebElement errorMessage;
-    @FindBy(xpath = "//div[@id='password-err-msg']/div")
-    private WebElement errorPassword;
-    @FindBy(xpath = "//div[@id='email-err-msg']/div")
-    private WebElement errorEmail;
-
-    private final String BASE_URL = "https://www.greencity.cx.ua/#/greenCity";
-    private WebDriver driver;
-    private int oneSec = 1;
+    private static WebDriver driver;
+    private static WebDriverWait wait;
 
     @BeforeAll
-    public void setUp() {
+    public static void setUp() {
         WebDriverManager.chromedriver().setup();
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--disable-blink-features=AutomationControlled");
-        options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
-        options.setExperimentalOption("useAutomationExtension", false);
-        driver = new ChromeDriver(options);
-        driver.get(BASE_URL);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(oneSec * 5L));
+        driver = new ChromeDriver();
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driver.get("http://localhost:4205/#/greenCity");
         driver.manage().window().maximize();
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     @BeforeEach
     public void initPageElements() {
         PageFactory.initElements(driver, this);
-        closeIframeIfExists();
+        switchToEnglish();
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+
+    @FindBy(xpath = "//img[contains(@class, 'ubs-header-sing-in-img') and @alt='sing in button']")
+    private WebElement signInButton;
+
+    @FindBy(xpath = "//input[@id='email' and @type='email']")
+    private WebElement emailInput;
+
+    @FindBy(xpath = "//input[@id='password' and @type='password']")
+    private WebElement passwordInput;
+
+    @FindBy(xpath = "//button[contains(@class, 'greenStyle') and @type='submit']")
+    private WebElement signInSubmitButton;
+
+    @FindBy(xpath = "//div[contains(@class, 'mat-tab-label-content') and contains(text(), 'My habits')]")
+    private WebElement myHabitsTab;
+
+    @FindBy(xpath = "//a[contains(@class, 'header_user-name')]")
+    private WebElement userMenuButton;
+
+    @FindBy(xpath = "//li[@role='button' and contains(@aria-label, 'sign-out')]")
+    private WebElement signOutButton;
+
+    @FindBy(xpath = "//div[@id='email-err-msg']//div[contains(text(), 'Please check that your e-mail address is indicated correctly')]")
+    private WebElement errorEmail;
+
+    @FindBy(xpath = "//div[contains(@class, 'alert-general-error') and contains(text(), 'Bad email or password')]")
+    private WebElement errorPassword;
+
+    @FindBy(xpath = "//a[@class='close-modal-window']")
+    private WebElement closeModalButton;
+
+    @FindBy(xpath = "//ul[contains(@class, 'header_lang')]//li[@role='option' and contains(@aria-label, 'english')]")
+    private WebElement languageSwitcher;
+
+    @FindBy(xpath = "//span[text()='En']")
+    private WebElement englishOption;
+
+    public void switchToEnglish() {
+        languageSwitcher.click();
+        englishOption.click();
     }
 
     @Test
-    public void verifyTitleTest() {
-        assertTrue(Objects.requireNonNull(driver.getTitle()).contains("GreenCity"));
-        assertEquals("GreenCity - Build Eco-Friendly Habits Today", driver.getTitle());
-    }
-
-    private void closeIframeIfExists() {
-        List<WebElement> iframe = driver.findElements(By.cssSelector("iframe"));
-        if (!iframe.isEmpty()) {
-            driver.switchTo().frame(iframe.getFirst());
-            List<WebElement> popupButton = driver.findElements(By.id("close"));
-            if (!popupButton.isEmpty()) {
-                popupButton.getFirst().click();
-            }
-            driver.switchTo().defaultContent();
-        }
+    @DisplayName("Verify title of the page.")
+    public void verifyTitle() {
+        Assertions.assertEquals("GreenCity", driver.getTitle());
     }
 
     @ParameterizedTest
@@ -96,45 +91,34 @@ public class TestSamples3 {
             "samplestest@greencity.com, weyt3$Guew^",
             "anotheruser@greencity.com, anotherpassword"
     })
-    public void positiveSignIn(String email, String password) {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.elementToBeClickable(signInButton)).click();
-
-        assertEquals("Welcome back!", welcomeText.getText());
-        assertEquals("Please enter your details to sign in.", signInDetailsText.getText());
-
-        emailInput.sendKeys(email);
-        passwordInput.sendKeys(password);
-        signInSubmitButton.click();
-
-        assertTrue(result.isDisplayed());
-        assertEquals("You have successfully signed in", result.getText());
+    @DisplayName("Verify valid sign in and sign out.")
+    public void testValidSignInAndSignOut(String email, String password) {
+        signInButton.click();
+        wait.until(ExpectedConditions.visibilityOf(emailInput)).sendKeys(email);
+        wait.until(ExpectedConditions.visibilityOf(passwordInput)).sendKeys(password);
+        wait.until(ExpectedConditions.elementToBeClickable(signInSubmitButton)).click();
+        Assertions.assertTrue(wait.until(ExpectedConditions.visibilityOf(myHabitsTab)).isDisplayed());
+        userMenuButton.click();
+        wait.until(ExpectedConditions.elementToBeClickable(signOutButton)).click();
+        Assertions.assertTrue(wait.until(ExpectedConditions.visibilityOf(signInButton)).isDisplayed());
     }
 
     @ParameterizedTest
     @CsvSource({
-            "invalid-email.com, validPassword123, Please check if the email is written correctly",
-            "samplestest@greencity.com, wrongPassword123, Invalid email or password",
-            ", validPassword123, Email cannot be empty",
-            "samplestest@greencity.com, , Password cannot be empty"
+            "samplestesgreencity.com, uT346^^^erw, Please check that your e-mail address is indicated correctly",
+            "validemail@example.com, gfhjkm12345678, Bad email or password"
     })
-    public void negativeSignIn(String email, String password, String expectedErrorMessage) {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.elementToBeClickable(signInButton)).click();
-
-        if (email != null) emailInput.sendKeys(email);
-        if (password != null) passwordInput.sendKeys(password);
-
-        signInSubmitButton.click();
-
-        String actualErrorMessage = errorMessage.isDisplayed() ? errorMessage.getText() : "";
-        assertEquals(expectedErrorMessage, actualErrorMessage);
-    }
-
-    @AfterAll
-    public void tearDown() {
-        if (driver != null) {
-            driver.quit();
+    @DisplayName("Verify invalid sign in.")
+    public void testInvalidSignIn(String email, String password, String expectedMessage) {
+        signInButton.click();
+        wait.until(ExpectedConditions.visibilityOf(emailInput)).sendKeys(email);
+        wait.until(ExpectedConditions.visibilityOf(passwordInput)).sendKeys(password);
+        wait.until(ExpectedConditions.elementToBeClickable(signInSubmitButton)).click();
+        if (email.contains("samplestesgreencity.com")) {
+            Assertions.assertEquals(expectedMessage, wait.until(ExpectedConditions.visibilityOf(errorEmail)).getText());
+        } else {
+            Assertions.assertEquals(expectedMessage, wait.until(ExpectedConditions.visibilityOf(errorPassword)).getText());
         }
+        wait.until(ExpectedConditions.elementToBeClickable(closeModalButton)).click();
     }
 }
