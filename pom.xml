@@ -14,34 +14,26 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- - - - - - Java - - - - - -->
-        <java.version>21</java.version>
-        <!-- - - - - - Logging - - - - - -->
-        <org.slf4j.version>2.0.16</org.slf4j.version>
-        <!-- - - - - - Tests - - - - - -->
-        <junit.jupiter.version>5.11.4</junit.jupiter.version>
-        <!-- - - - - - Password - - - - - -->
-        <application.password>null123</application.password>
+        <java.version>21</java.version> <!-- Java version -->
+        <org.slf4j.version>2.0.16</org.slf4j.version> <!-- SLF4J version -->
+        <junit.jupiter.version>5.11.4</junit.jupiter.version> <!-- JUnit 5 version -->
+        <application.password>null123</application.password> <!-- Password for application -->
     </properties>
 
     <dependencies>
-
-        <!-- - - - - - Test - - - - - -->
-
+        <!-- JUnit 5 dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
+            <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
@@ -49,21 +41,7 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-suite</artifactId>
-            <version>1.11.4</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- - - - - - Automation - - - - - -->
+        <!-- Selenium dependencies -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
@@ -83,58 +61,37 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>htmlunit-driver</artifactId>
-            <version>4.13.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.codeborne</groupId>
-            <artifactId>phantomjsdriver</artifactId>
-            <version>1.5.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- - - - - - Rest - - - - - -->
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>4.12.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.11.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- - - - - - Logging - - - - - -->
+        <!-- Other dependencies -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${org.slf4j.version}</version>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${org.slf4j.version}</version>
             <scope>runtime</scope>
         </dependency>
-
-        <!-- - - - - - Properties - - - - - -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.12.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.11.0</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>io.github.cdimascio</groupId>
             <artifactId>dotenv-java</artifactId>
             <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
-        <!-- Hamcrest -->
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
@@ -152,7 +109,7 @@
         <finalName>${project.artifactId}</finalName>
 
         <plugins>
-
+            <!-- Maven resources plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -162,6 +119,7 @@
                 </configuration>
             </plugin>
 
+            <!-- Maven compiler plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -173,24 +131,20 @@
                 </configuration>
             </plugin>
 
+            <!-- Maven Surefire plugin for running tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
                     <includes>
-                        <!-- <include>**/SuiteDemo.java</include> -->
-                        <include>**/*Test.java</include>
-                        <!-- <include>**/SimpleJUnit5.java</include> -->
+                        <include>**/*Test.java</include> <!-- Include test files ending with Test.java -->
                     </includes>
                     <systemPropertyVariables>
-                        <surefire.application.password>
-                            ${application.password}
-                        </surefire.application.password>
+                        <surefire.application.password>${application.password}</surefire.application.password>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 

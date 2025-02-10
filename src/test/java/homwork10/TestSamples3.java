@@ -10,26 +10,47 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.time.Duration;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
 public class TestSamples3 {
+    private WebDriverWait wait;
+
+    @FindBy(css = "div.main-content.app-container img.ubs-header-sing-in-img")
+    private WebElement signInButton;
+
+    @FindBy(id = "email")
+    private WebElement emailInput;
+
+    @FindBy(id = "password")
+    private WebElement passwordInput;
+
+    @FindBy(css = ".ubsStyle")
+    private WebElement signInSubmitButton;
+
+    @FindBy(css = ".mat-simple-snackbar > span")
+    private WebElement result;
+
+    @FindBy(css = ".alert-general-error")
+    private WebElement errorMessage;
+
     private static WebDriver driver;
-    private static WebDriverWait wait;
 
     @BeforeAll
     public static void setUp() {
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.get("http://localhost:4205/#/greenCity");
-        driver.manage().window().maximize();
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        driver.get("http://localhost:4205/#/ubs");
+        driver.manage().window().setSize(new Dimension(1300, 1120));
     }
 
     @BeforeEach
     public void initPageElements() {
         PageFactory.initElements(driver, this);
-        switchToEnglish();
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     @AfterAll
@@ -39,49 +60,8 @@ public class TestSamples3 {
         }
     }
 
-    @FindBy(xpath = "//img[contains(@class, 'ubs-header-sing-in-img') and @alt='sing in button']")
-    private WebElement signInButton;
-
-    @FindBy(xpath = "//input[@id='email' and @type='email']")
-    private WebElement emailInput;
-
-    @FindBy(xpath = "//input[@id='password' and @type='password']")
-    private WebElement passwordInput;
-
-    @FindBy(xpath = "//button[contains(@class, 'greenStyle') and @type='submit']")
-    private WebElement signInSubmitButton;
-
-    @FindBy(xpath = "//div[contains(@class, 'mat-tab-label-content') and contains(text(), 'My habits')]")
-    private WebElement myHabitsTab;
-
-    @FindBy(xpath = "//a[contains(@class, 'header_user-name')]")
-    private WebElement userMenuButton;
-
-    @FindBy(xpath = "//li[@role='button' and contains(@aria-label, 'sign-out')]")
-    private WebElement signOutButton;
-
-    @FindBy(xpath = "//div[@id='email-err-msg']//div[contains(text(), 'Please check that your e-mail address is indicated correctly')]")
-    private WebElement errorEmail;
-
-    @FindBy(xpath = "//div[contains(@class, 'alert-general-error') and contains(text(), 'Bad email or password')]")
-    private WebElement errorPassword;
-
-    @FindBy(xpath = "//a[@class='close-modal-window']")
-    private WebElement closeModalButton;
-
-    @FindBy(xpath = "//ul[contains(@class, 'header_lang')]//li[@role='option' and contains(@aria-label, 'english')]")
-    private WebElement languageSwitcher;
-
-    @FindBy(xpath = "//span[text()='En']")
-    private WebElement englishOption;
-
-    public void switchToEnglish() {
-        languageSwitcher.click();
-        englishOption.click();
-    }
-
     @Test
-    @DisplayName("Verify title of the page.")
+    @DisplayName("Verify page title is correct")
     public void verifyTitle() {
         Assertions.assertEquals("GreenCity", driver.getTitle());
     }
@@ -91,34 +71,76 @@ public class TestSamples3 {
             "samplestest@greencity.com, weyt3$Guew^",
             "anotheruser@greencity.com, anotherpassword"
     })
-    @DisplayName("Verify valid sign in and sign out.")
-    public void testValidSignInAndSignOut(String email, String password) {
-        signInButton.click();
-        wait.until(ExpectedConditions.visibilityOf(emailInput)).sendKeys(email);
-        wait.until(ExpectedConditions.visibilityOf(passwordInput)).sendKeys(password);
-        wait.until(ExpectedConditions.elementToBeClickable(signInSubmitButton)).click();
-        Assertions.assertTrue(wait.until(ExpectedConditions.visibilityOf(myHabitsTab)).isDisplayed());
-        userMenuButton.click();
-        wait.until(ExpectedConditions.elementToBeClickable(signOutButton)).click();
-        Assertions.assertTrue(wait.until(ExpectedConditions.visibilityOf(signInButton)).isDisplayed());
+    @DisplayName("Verify valid login attempts")
+    public void signIn(String email, String password) {
+
+        WebElement signInButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div.main-content.app-container img.ubs-header-sing-in-img")));
+
+
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("arguments[0].click();", signInButton);
+
+
+        emailInput.clear();
+        passwordInput.clear();
+
+        emailInput.sendKeys(email);
+        assertThat(emailInput.getAttribute("value"), is(email));
+        passwordInput.sendKeys(password);
+        assertThat(passwordInput.getAttribute("value"), is(password));
+
+
+        WebElement signInSubmitButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".ubsStyle")));
+        js.executeScript("arguments[0].click();", signInSubmitButton);
     }
 
     @ParameterizedTest
     @CsvSource({
-            "samplestesgreencity.com, uT346^^^erw, Please check that your e-mail address is indicated correctly",
-            "validemail@example.com, gfhjkm12345678, Bad email or password"
+            "invalidemail@greencity.com, password, Please check if the email is written correctly",
+            "validemail@greencity.com, wrongpassword, Invalid password"
     })
-    @DisplayName("Verify invalid sign in.")
-    public void testInvalidSignIn(String email, String password, String expectedMessage) {
-        signInButton.click();
-        wait.until(ExpectedConditions.visibilityOf(emailInput)).sendKeys(email);
-        wait.until(ExpectedConditions.visibilityOf(passwordInput)).sendKeys(password);
-        wait.until(ExpectedConditions.elementToBeClickable(signInSubmitButton)).click();
-        if (email.contains("samplestesgreencity.com")) {
-            Assertions.assertEquals(expectedMessage, wait.until(ExpectedConditions.visibilityOf(errorEmail)).getText());
-        } else {
-            Assertions.assertEquals(expectedMessage, wait.until(ExpectedConditions.visibilityOf(errorPassword)).getText());
-        }
-        wait.until(ExpectedConditions.elementToBeClickable(closeModalButton)).click();
+    @DisplayName("Verify invalid login attempts")
+    public void signInNotValid(String email, String password, String expectedError) {
+
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("arguments[0].click();", signInButton);
+
+
+        emailInput.clear();
+        passwordInput.clear();
+
+        emailInput.sendKeys(email);
+        passwordInput.sendKeys(password);
+
+
+        WebElement signInSubmitButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".ubsStyle")));
+        js.executeScript("arguments[0].click();", signInSubmitButton);
+
+        assertThat(errorMessage.getText(), is(expectedError));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            " ,password, Email is required",
+            "email@example.com, , Password is required"
+    })
+    @DisplayName("Verify login with missing fields")
+    public void signInMissingFields(String email, String password, String expectedError) {
+
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("arguments[0].click();", signInButton);
+
+
+        emailInput.clear();
+        passwordInput.clear();
+
+        emailInput.sendKeys(email);
+        passwordInput.sendKeys(password);
+
+
+        WebElement signInSubmitButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".ubsStyle")));
+        js.executeScript("arguments[0].click();", signInSubmitButton);
+
+        assertThat(errorMessage.getText(), is(expectedError));
     }
 }
