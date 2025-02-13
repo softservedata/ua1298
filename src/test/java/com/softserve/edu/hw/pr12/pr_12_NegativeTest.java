@@ -1,4 +1,4 @@
-package com.softserve.edu.hw;
+package com.softserve.edu.hw.pr12;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.AfterEach;

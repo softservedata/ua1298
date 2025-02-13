@@ -1,4 +1,4 @@
-package com.softserve.edu.hw;
+package com.softserve.edu.hw.pr11;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.AfterEach;
@@ -37,7 +37,6 @@ public class pr_11_PositiveTest {
                 driver.quit();
             }
         }
-
         @ParameterizedTest
         @CsvSource({
                 "tester0202@gmail.com, Qwerty123!"
@@ -65,4 +64,5 @@ public class pr_11_PositiveTest {
             signOut.click();
 
         }
+
     }

@@ -1,4 +1,5 @@
-package com.softserve.edu.hw;
+package com.softserve.edu.hw.pr11;
+
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,12 +13,15 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.time.Duration;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class pr_12 {
+public class pr_11_NegativeTest {
     private WebDriver driver;
     private WebDriverWait wait;
+
 
     @BeforeEach
     public void setUp() {
@@ -33,30 +37,29 @@ public class pr_12 {
             driver.quit();
         }
     }
+
     @ParameterizedTest
     @CsvSource({
-            "tester0202@gmail.com, Qwerty123!"
+            "tester0303@gmail.com, Qwerty123!",
+            "tester0303gmail.com, Qwerty123!",
+            "11@gmail.com, 123123123!",
     })
     @DisplayName("Verify loginning")
     void testUserLoginning(String email, String pass) throws InterruptedException {
         driver.get("http://localhost:4205/#/ubs");
 
-        WebElement signUpButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".ubs-header-sign-in")));
+        WebElement signUpButton = wait.until((ExpectedConditions.elementToBeClickable(By.cssSelector(".ubs-header-sign-in"))));
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", signUpButton);
 
-        WebElement emailField = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("email")));
+        WebElement emailField = driver.findElement(By.id("email"));
         emailField.sendKeys(email);
 
-        WebElement passwordField = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("password")));
-        passwordField.sendKeys(pass);
+        WebElement password = driver.findElement(By.id("password"));
+        password.sendKeys(pass);
 
-        WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".ubsStyle")));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", submitButton);
+        WebElement submit = driver.findElement(By.cssSelector(".ubsStyle"));
+        submit.click();
 
-        WebElement headerUser = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("a.ubs-header_user-name")));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", headerUser);
 
-        WebElement signOut = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".drop-down-item")));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", signOut);
     }
 }
