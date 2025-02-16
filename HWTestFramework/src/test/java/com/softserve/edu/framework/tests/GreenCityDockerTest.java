@@ -37,10 +37,9 @@ public class GreenCityDockerTest extends TestRunner{
         signInUI.signIn();
         assertTrue(signInUI.isSignIn());
 
-        //TODO: try to fix this method and find reason why is doesn`t work
-        //driver.findElement(By.cssSelector("a[ng-reflect-router-link='/profile']")).click();
-        //assertEquals("TestUser", driver.findElement(By.cssSelector("p.name")).getText());
-        assertEquals("TestUser", signInUI.getUIUserName());
+        String expectedUIName = "TestUser";
+        String actualUIName = signInUI.getUIUserName();
+        assertEquals(expectedUIName, actualUIName);
 
         signInUI.signOut();
         assertTrue(signInUI.isSignOut());

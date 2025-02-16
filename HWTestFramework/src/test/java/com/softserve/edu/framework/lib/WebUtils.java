@@ -73,4 +73,8 @@ public class WebUtils {
         element.clear();
         element.click();
     }
+
+    public void openNewTab(String link){
+        javascriptExecutor.executeScript("window.open(arguments[0]);", link);
+    }
 }

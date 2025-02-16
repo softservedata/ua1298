@@ -92,7 +92,6 @@ public class SignInUI {
         utils.fillText(driver.findElement(By.id("password")), UserRepository.getDefault().getPassword());
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".greenStyle")));
         driver.findElement(By.cssSelector(".greenStyle")).click();
-        utils.waitUntilElementInvisible(wait, driver.findElement(By.className("wrapper")));
     }
 
     public boolean isSignOut(){
