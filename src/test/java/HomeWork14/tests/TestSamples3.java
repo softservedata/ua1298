@@ -1,28 +1,27 @@
-package HomeWork13.tests;
+package HomeWork14.tests;
 
-import HomeWork13.TestRunner;
-import HomeWork13.data.LoginTestData;
-import HomeWork13.pages.LoginPage;
-import HomeWork13.repositories.LoginTestDataRepository;
+import HomeWork14.pages.LoginPage;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.time.Duration;
-import java.util.List;
-
 public class TestSamples3 {
+    private static final Logger logger = LoggerFactory.getLogger(TestSamples3.class);
     private static WebDriver driver;
     private LoginPage loginPage;
 
     @BeforeAll
     public static void setUp() {
+        logger.info("Setting up WebDriver before tests...");
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
         driver.manage().window().maximize();
@@ -32,6 +31,7 @@ public class TestSamples3 {
 
     @BeforeEach
     public void initPageElements() {
+        logger.info("Initializing page elements...");
         loginPage = new LoginPage(driver);
         loginPage.switchToEnglish();
     }
@@ -39,6 +39,7 @@ public class TestSamples3 {
     @AfterAll
     static void tearDown() {
         if (driver != null) {
+            logger.info("Closing WebDriver...");
             driver.quit();
         }
     }
@@ -46,22 +47,42 @@ public class TestSamples3 {
     @Test
     @DisplayName("Verify page title")
     public void verifyTitle() {
-        Assertions.assertEquals("GreenCity", driver.getTitle());
+        logger.info("Test: Verifying page title...");
+        try {
+            assertEquals("GreenCity", driver.getTitle());
+            logger.info("Test passed!");
+        } catch (AssertionError e) {
+            logger.error("Test failed: Page title verification", e);
+            throw e;
+        }
     }
 
     @ParameterizedTest
     @CsvFileSource(resources = "/valid-data.csv", numLinesToSkip = 1)
     @DisplayName("Verify valid sign in and sign out.")
     public void testValidSignInAndSignOut(String email, String password) {
-        loginPage.login(email, password);
-
+        logger.info("Test: Valid login attempt (email: {})", email);
+        try {
+            loginPage.login(email, password);
+            logger.info("Test passed!");
+        } catch (Exception e) {
+            logger.error("Test failed: Valid login attempt", e);
+            fail(e.getMessage());
+        }
     }
 
     @ParameterizedTest
     @CsvFileSource(resources = "/invalid-data.csv", numLinesToSkip = 1)
     @DisplayName("Verify invalid sign in.")
     public void testInvalidSignIn(String email, String password, String expectedMessage) {
-        loginPage.login(email, password);
-        
+        logger.info("Test: Invalid login attempt (email: {})", email);
+        try {
+            loginPage.login(email, password);
+
+            logger.info("Test passed!");
+        } catch (Exception e) {
+            logger.error("Test failed: Invalid login attempt", e);
+            fail(e.getMessage());
+        }
     }
 }
