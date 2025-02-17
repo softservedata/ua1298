@@ -76,7 +76,7 @@ public class TestRunner {
     public static final long scriptSec = 20;
     public static boolean isTestSuccessful = false;
     protected static final String BROWSER_LABEL = "browser";
-    Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected  final Logger logger = LoggerFactory.getLogger(this.getClass());
     protected static Dotenv dotenv;
     protected static WebUtils webUtils;
     protected static SignInUI signInUI;

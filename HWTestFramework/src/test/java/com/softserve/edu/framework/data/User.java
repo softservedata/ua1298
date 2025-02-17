@@ -1,7 +1,5 @@
 package com.softserve.edu.framework.data;
 
-import kotlin._Assertions;
-
 import java.util.Objects;
 
 public class User {

@@ -31,9 +31,9 @@ public final class UserRepository {
 
     public static Stream<Arguments> getInvalidDataUsers(){
         return Stream.of(
-                Arguments.of(getUserWithInvalidEmail().getEmail(), getUserWithInvalidEmail().getPassword()),
-                Arguments.of(getUserWithInvalidData().getEmail(), getUserWithInvalidData().getPassword()),
-                Arguments.of(getUserWithInvalidPassword().getEmail(), getUserWithInvalidPassword().getPassword())
+                Arguments.of(getUserWithInvalidEmail()),
+                Arguments.of(getUserWithInvalidData()),
+                Arguments.of(getUserWithInvalidPassword())
         );
     }
 

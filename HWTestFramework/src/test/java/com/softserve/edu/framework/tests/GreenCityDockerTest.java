@@ -4,14 +4,10 @@ import com.softserve.edu.framework.data.User;
 import com.softserve.edu.framework.data.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvFileSource;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -27,11 +23,13 @@ public class GreenCityDockerTest extends TestRunner{
 
     @Test
     public void verifyTitleTest() {
+        logger.info(() -> "Start verifyTitleTest()");
         assertEquals("GreenCity", driver.getTitle());
     }
 
     @Test
     public void checkSignInGeneralTest(){
+        logger.info(() -> "Start checkSignInGeneralTest()");
         assertTrue(signInUI.isSignOut());
 
         signInUI.signIn();
@@ -48,6 +46,7 @@ public class GreenCityDockerTest extends TestRunner{
     @ParameterizedTest
     @MethodSource("com.softserve.edu.framework.data.UserRepository#getValidDataUsers")
     public void checkSignInWithValidDataTest(User user) {
+        logger.info(() -> "Start checkSignInWithValidDataTest() with " + user);
         assertTrue(signInUI.isSignOut());
         signInUI.prepareSignInForm();
 
@@ -68,6 +67,7 @@ public class GreenCityDockerTest extends TestRunner{
 
     @Test
     public void checkSignInCheckLabelTextsTest(){
+        logger.info(() -> "Start checkSignInCheckLabelTextsTest()");
         signInUI.prepareSignInForm();
 
         assertEquals("Welcome back!", welcomeText.getText());
@@ -78,7 +78,8 @@ public class GreenCityDockerTest extends TestRunner{
     }
 
     @Test
-    public void checkSignInCheckErrorMessagesWhileEmptyFieldsTest() throws InterruptedException {
+    public void checkSignInCheckErrorMessagesWhileEmptyFieldsTest(){
+        logger.info(() -> "Start checkSignInCheckErrorMessagesWhileEmptyFieldsTest()");
         signInUI.prepareSignInForm();
 
         emailInput.click();
@@ -115,14 +116,13 @@ public class GreenCityDockerTest extends TestRunner{
     }
 
     @Test
-    public void checkSignInCheckErrorMessagesWhileIncorrectDataTest() throws InterruptedException {
+    public void checkSignInCheckErrorMessagesWhileIncorrectDataTest(){
+        logger.info(() -> "Start checkSignInCheckErrorMessagesWhileIncorrectDataTest()");
         signInUI.prepareSignInForm();
 
         webUtils.fillText(emailInput, UserRepository.getUserWithIncorrectData().getEmail());
         webUtils.emptySignInPagePartClick();
         webUtils.waitUntilElementVisible(waitFiveSec, errorEmail);
-
-        Thread.sleep(55000);
 
         assertTrue(webUtils.checkVisibilityOfManyElements(errorsLocators, new boolean[]{true, false, true}));
         assertEquals(expectedErrorMessages[3], errorEmail.getText());
@@ -138,7 +138,11 @@ public class GreenCityDockerTest extends TestRunner{
 
     @ParameterizedTest
     @MethodSource("com.softserve.edu.framework.data.UserRepository#getInvalidDataUsers")
-    public void checkSignInWithInvalidCredentialsTest(String email, String password) {
+    public void checkSignInWithInvalidCredentialsTest(User user) {
+        logger.info(() -> "Start checkSignInWithInvalidCredentialsTest() with " + user);
+        String email = user.getEmail();
+        String password = user.getPassword();
+
         signInUI.prepareSignInForm();
 
         webUtils.fillText(emailInput, email);
@@ -165,6 +169,8 @@ public class GreenCityDockerTest extends TestRunner{
 
     @Test
     public void checkButtonClickableTest(){
+        logger.info(() -> "Start checkButtonClickableTest()");
+
         String login = UserRepository.getDefault().getEmail();
         String password = UserRepository.getDefault().getPassword();
         signInUI.prepareSignInForm();
@@ -192,6 +198,7 @@ public class GreenCityDockerTest extends TestRunner{
 
     @Test
     public void checkElementsOnSignInFormClickableAndEnabledTest(){
+        logger.info(() -> "Start checkElementsOnSignInFormClickableAndEnabledTest()");
         signInUI.prepareSignInForm();
 
         webUtils.waitUntilElementVisible(waitFiveSec, emailInput);
