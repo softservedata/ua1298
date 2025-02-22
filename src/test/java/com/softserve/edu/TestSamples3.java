@@ -1,58 +1,25 @@
 package com.softserve.edu;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.jupiter.api.*;
+import com.softserve.edu.data.TestData;
+import com.softserve.edu.data.TestDataRepository;
+import com.softserve.edu.helpers.AuthHelper;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.FindAll;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
+import java.util.stream.Stream;
 
-public class TestSamples3 {
-    private static WebDriverWait wait;
-    private static WebDriver driver;
-    private static JavascriptExecutor js;
+public class TestSamples3 extends TestRunner {
+    private final AuthHelper authHelper;
 
-    @BeforeAll
-    public static void setUp() {
-        WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
-        driver.manage().window().maximize();
-        driver.get("https://www.greencity.cx.ua/#/greenCity");
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        js = (JavascriptExecutor) driver;
-    }
-
-    @BeforeEach
-    public void initPageElements() {
-        PageFactory.initElements(driver, this);
-    }
-
-    @AfterAll
-    static void tearDown() {
-        if (driver != null) {
-            driver.quit();
-        }
-    }
-
-    private WebElement findElementByJs(String script) {
-        return (WebElement) js.executeScript(script);
-    }
-
-    @FindAll({
-            @FindBy(xpath = "//a[contains(@class, 'header_sign-in-link') and @role='link']"),
-            @FindBy(xpath = "//img[contains(@class, 'ubs-header-sing-in-img') and @alt='sing in button']")
-    })
+    @FindBy(xpath = "//a[contains(@class, 'header_sign-in-link') and @role='link']")
     private WebElement signInButton;
-
-    @FindBy(xpath = "//h1[contains(text(), 'Welcome back!')]")
-    private WebElement welcomeText;
 
     @FindBy(xpath = "//input[@id='email' and @type='email']")
     private WebElement emailInput;
@@ -72,8 +39,27 @@ public class TestSamples3 {
     @FindBy(xpath = "//li[@role='button' and contains(@aria-label, 'sign-out')]")
     private WebElement signOutButton;
 
+    @FindBy(xpath = "//div[@id='email-err-msg']//div[contains(text(), 'Please check that your e-mail address is indicated correctly')]")
+    private WebElement errorEmail;
+
+    @FindBy(xpath = "//div[contains(@class, 'alert-general-error') and contains(text(), 'Bad email or password')]")
+    private WebElement errorPassword;
+
     @FindBy(xpath = "//a[@class='close-modal-window']")
     private WebElement closeModalButton;
+
+    public TestSamples3() {
+        PageFactory.initElements(driver, this);
+        authHelper = new AuthHelper(driver, wait);
+    }
+
+    static Stream<TestData> validCredentialsProvider() {
+        return TestDataRepository.getValidCredentials().stream();
+    }
+
+    static Stream<TestData> invalidCredentialsProvider() {
+        return TestDataRepository.getInvalidCredentials().stream();
+    }
 
     @DisplayName("Verify title of the page.")
     @Test
@@ -82,21 +68,11 @@ public class TestSamples3 {
     }
 
     @ParameterizedTest
-    @CsvSource({"levjuli98@gmail.com, 12345Yulia!"})
+    @MethodSource("validCredentialsProvider")
     @DisplayName("Verify valid sign in and sign out.")
-    public void testValidSignInAndSignOut(String email, String password) {
-        wait.until(ExpectedConditions.elementToBeClickable(signInButton)).click();
-
-        WebElement userEmail = wait.until(ExpectedConditions.visibilityOf(emailInput));
-        userEmail.clear();
-        userEmail.sendKeys(email);
-
-        WebElement userPassword = wait.until(ExpectedConditions.visibilityOf(passwordInput));
-        userPassword.clear();
-        userPassword.sendKeys(password);
-
-        WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(signInSubmitButton));
-        js.executeScript("arguments[0].click();", submitButton);
+    public void testValidSignInAndSignOut(TestData testData) {
+        authHelper.login(signInButton, emailInput, passwordInput, signInSubmitButton,
+                testData.getEmail(), testData.getPassword());
 
         WebElement habitsTab = wait.until(ExpectedConditions.visibilityOf(myHabitsTab));
         Assertions.assertTrue(habitsTab.isDisplayed(), "The 'My habits' tab is not visible after login.");
@@ -112,33 +88,22 @@ public class TestSamples3 {
     }
 
     @ParameterizedTest
-    @CsvSource({
-            "testgreencity.com, 347593-!, Please check that your e-mail address is indicated correctly",
-            "validemail@ggmail.com, juli12345!, Bad email or password"
-    })
+    @MethodSource("invalidCredentialsProvider")
     @DisplayName("Verify invalid sign in.")
-    public void testInvalidSignIn(String email, String password, String expectedMessage) {
-        wait.until(ExpectedConditions.elementToBeClickable(signInButton)).click();
+    public void testInvalidSignIn(TestData testData) {
+        authHelper.login(signInButton, emailInput, passwordInput, signInSubmitButton,
+                testData.getEmail(), testData.getPassword());
 
-        WebElement userEmail = wait.until(ExpectedConditions.visibilityOf(emailInput));
-        userEmail.clear();
-        userEmail.sendKeys(email);
-
-        WebElement userPassword = wait.until(ExpectedConditions.visibilityOf(passwordInput));
-        userPassword.clear();
-        userPassword.sendKeys(password);
-
-        WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(signInSubmitButton));
-        js.executeScript("arguments[0].click();", submitButton);
-
-        WebElement errorElement;
-        if (email.contains("testgreencity.com")) {
-            errorElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='email-err-msg']//div[contains(text(), 'Please check that your e-mail address is indicated correctly')]")));
+        if (testData.getEmail().contains("testgreencity.com")) {
+            wait.until(ExpectedConditions.visibilityOf(errorEmail));
+            Assertions.assertEquals(testData.getExpectedMessage(), errorEmail.getText(),
+                    "Error message does not match expected.");
         } else {
-            errorElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class, 'alert-general-error') and contains(text(), 'Bad email or password')]")));
+            wait.until(ExpectedConditions.visibilityOf(errorPassword));
+            Assertions.assertEquals(testData.getExpectedMessage(), errorPassword.getText(),
+                    "Error message does not match expected.");
         }
 
-        Assertions.assertEquals(expectedMessage, errorElement.getText(), "Error message does not match expected.");
         wait.until(ExpectedConditions.elementToBeClickable(closeModalButton)).click();
     }
 }
