@@ -102,7 +102,7 @@ public class SignInTest {
 
     @ParameterizedTest
     @CsvSource({
-            "svitlanakovalova1008@gmail.com, 1819156Ss!"
+            "huo48653@bcooq.com, Hhuo48653!"
     })
 
     public void signInPositiveScenario(String email, String password) {
